@@ -5,73 +5,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-</head>
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: rgb(255, 0, 0);
-    }
-    canvas{
-        border-radius: 10px;
-        box-shadow: 0 0 20px rgb(0, 0, 0);
-    }
-    .buttons{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: rgb(255, 0, 0);
+        }
 
-    .buttons button{
-        padding: 10px 20px;
-        border: none;
-        border-radius: 5px;
-        background-color: rgb(0, 0, 0);
-        color: white;
-        font-size: 16px;
-        cursor: pointer;
-    }
-    .buttons button:hover{
-        background-color: rgb(0, 140, 255);
-    }
-    .buttons button:active{
-        transform: scale(0.95);
-    }
-    .buttons button:focus{
-        outline: none;
-    }
-</style>
+        canvas {
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgb(0, 0, 0);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: rgb(0, 0, 0);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .buttons button:hover {
+            background-color: rgb(0, 140, 255);
+        }
+
+        .buttons button:active {
+            transform: scale(0.95);
+        }
+
+        .buttons button:focus {
+            outline: none;
+        }
+    </style>
+</head>
+
 <body>
     <div class="buttons">
-        <button class="same">Same Colour</button>
-        <button class="random">Random Colour</button>
+        <button class="same">Stop</button>
+        <button class="random">Play</button>
     </div>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js"
-      integrity="sha512-0zGLOFv/+OQ6YfVCSGDQWhrDRx0ONmBqWvs3gI4olm8i6xtKoG1FhEnB4eTaWCVnojyfUDgE8Izeln+mAJAkFA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js" integrity="sha512-0zGLOFv/+OQ6YfVCSGDQWhrDRx0ONmBqWvs3gI4olm8i6xtKoG1FhEnB4eTaWCVnojyfUDgE8Izeln+mAJAkFA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         const sameBtn = document.querySelector('.same');
         const randomBtn = document.querySelector('.random');
         var fireworks = [];
         var gravity;
-        let colorType = false;
+        let animationPlaying = true;
 
         function Firework() {
             this.hu = random(255);
             this.firework = new Particle(mouseX, mouseY, this.hu, true);
             this.exploded = false;
             this.particles = [];
-
 
             this.done = function () {
                 if (this.exploded && this.particles.length === 0) {
@@ -80,7 +80,8 @@
                     return false;
                 }
             }
-            this.update = function () { //firstUpdate
+
+            this.update = function () {
                 if (!this.exploded) {
                     this.firework.applyForce(gravity);
                     this.firework.update();
@@ -104,6 +105,7 @@
                     this.particles.push(p);
                 }
             }
+
             this.show = function () {
                 if (!this.exploded) {
                     this.firework.show();
@@ -122,23 +124,31 @@
             strokeWeight(4);
             background(0);
 
-
+            // Event listeners for buttons
+            sameBtn.addEventListener('click', () => {
+                animationPlaying = false;
+            });
+            randomBtn.addEventListener('click', () => {
+                animationPlaying = true;
+            });
         }
 
         function draw() {
             colorMode(RGB);
             background(0, 0, 0, 25);
-            if (mouseIsPressed) {
-                fireworks.push(new Firework());
-            }
+            if (animationPlaying) {
+                if (mouseIsPressed) {
+                    fireworks.push(new Firework());
+                }
 
-            for (var i = fireworks.length - 1; i >= 0; i--) {
-                fireworks[i].update();
-                fireworks[i].show();
-                if (fireworks[i].done())
-                    fireworks.splice(i, 1);
+                for (var i = fireworks.length - 1; i >= 0; i--) {
+                    fireworks[i].update();
+                    fireworks[i].show();
+                    if (fireworks[i].done()) {
+                        fireworks.splice(i, 1);
+                    }
+                }
             }
-
         }
 
         function Particle(x, y, hu, firework) {
@@ -160,7 +170,7 @@
                 this.acc.add(force);
             }
 
-            this.update = function () { //second update
+            this.update = function () {
                 if (!this.firework) {
                     this.vel.mult(0.9);
                     this.lifespan -= 4;
@@ -169,6 +179,7 @@
                 this.pos.add(this.vel);
                 this.acc.mult(0);
             }
+
             this.done = function () {
                 if (this.lifespan < 0) {
                     return true;
@@ -176,17 +187,17 @@
                     return false;
                 }
             }
+
             this.show = function () {
                 colorMode(HSB);
                 if (!this.firework) {
                     strokeWeight(2);
-                    stroke(hu, 255, 255, this.lifespan);
+                    stroke(this.hu, 255, 255, this.lifespan);
                 } else {
                     strokeWeight(4);
-                    stroke(hu, 255, 255);
+                    stroke(this.hu, 255, 255);
                 }
                 point(this.pos.x, this.pos.y);
-
             }
         }
     </script>
