@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: rgb(255, 0, 0);
+    }
+    canvas{
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgb(0, 0, 0);
+    }
+    .buttons{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .buttons button{
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        background-color: rgb(0, 0, 0);
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .buttons button:hover{
+        background-color: rgb(0, 140, 255);
+    }
+    .buttons button:active{
+        transform: scale(0.95);
+    }
+    .buttons button:focus{
+        outline: none;
+    }
+</style>
+<body>
+    <div class="buttons">
+        <button class="same">Same Colour</button>
+        <button class="random">Random Colour</button>
+    </div>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.3/p5.min.js"
+      integrity="sha512-0zGLOFv/+OQ6YfVCSGDQWhrDRx0ONmBqWvs3gI4olm8i6xtKoG1FhEnB4eTaWCVnojyfUDgE8Izeln+mAJAkFA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script>
+        const sameBtn = document.querySelector('.same');
+        const randomBtn = document.querySelector('.random');
+        var fireworks = [];
+        var gravity;
+        let colorType = false;
+
+        function Firework() {
+            this.hu = random(255);
+            this.firework = new Particle(mouseX, mouseY, this.hu, true);
+            this.exploded = false;
+            this.particles = [];
+
+
+            this.done = function () {
+                if (this.exploded && this.particles.length === 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            this.update = function () { //firstUpdate
+                if (!this.exploded) {
+                    this.firework.applyForce(gravity);
+                    this.firework.update();
+                    if (this.firework.vel.y >= 0) {
+                        this.exploded = true;
+                        this.explode();
+                    }
+                }
+                for (var i = this.particles.length - 1; i >= 0; i--) {
+                    this.particles[i].applyForce(gravity);
+                    this.particles[i].update();
+                    if (this.particles[i].done()) {
+                        this.particles.splice(i, 1);
+                    }
+                }
+            }
+
+            this.explode = function () {
+                for (var i = 0; i < 100; i++) {
+                    var p = new Particle(this.firework.pos.x, this.firework.pos.y, this.hu, false);
+                    this.particles.push(p);
+                }
+            }
+            this.show = function () {
+                if (!this.exploded) {
+                    this.firework.show();
+                }
+                for (var i = this.particles.length - 1; i >= 0; i--) {
+                    this.particles[i].show();
+                }
+            }
+        }
+
+        function setup() {
+            createCanvas(600, 400);
+            gravity = createVector(0, 0.2);
+            colorMode(HSB);
+            stroke(255);
+            strokeWeight(4);
+            background(0);
+
+
+        }
+
+        function draw() {
+            colorMode(RGB);
+            background(0, 0, 0, 25);
+            if (mouseIsPressed) {
+                fireworks.push(new Firework());
+            }
+
+            for (var i = fireworks.length - 1; i >= 0; i--) {
+                fireworks[i].update();
+                fireworks[i].show();
+                if (fireworks[i].done())
+                    fireworks.splice(i, 1);
+            }
+
+        }
+
+        function Particle(x, y, hu, firework) {
+            this.pos = createVector(x, y);
+            this.firework = firework;
+            this.lifespan = 255;
+            this.hu = hu;
+
+            if (this.firework) {
+                this.vel = createVector(0, 0);
+            } else {
+                this.vel = p5.Vector.random2D();
+                this.vel.mult(random(2, 10));
+            }
+
+            this.acc = createVector(0, 0);
+
+            this.applyForce = function (force) {
+                this.acc.add(force);
+            }
+
+            this.update = function () { //second update
+                if (!this.firework) {
+                    this.vel.mult(0.9);
+                    this.lifespan -= 4;
+                }
+                this.vel.add(this.acc);
+                this.pos.add(this.vel);
+                this.acc.mult(0);
+            }
+            this.done = function () {
+                if (this.lifespan < 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+            this.show = function () {
+                colorMode(HSB);
+                if (!this.firework) {
+                    strokeWeight(2);
+                    stroke(hu, 255, 255, this.lifespan);
+                } else {
+                    strokeWeight(4);
+                    stroke(hu, 255, 255);
+                }
+                point(this.pos.x, this.pos.y);
+
+            }
+        }
+    </script>
+</body>
+
+</html>
